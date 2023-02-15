@@ -8,6 +8,7 @@ use App\Events\BadgeUnlocked;
 use App\Models\Achievement;
 use App\Models\Badge;
 use Illuminate\Support\Facades\DB;
+use App\Providers\LocalPaymentProvider;
 
 class UnlockAchievements
 {
@@ -44,7 +45,17 @@ class UnlockAchievements
         foreach ($unlockedBadges as $badge) {
             $user->badges()->attach($badge->id);
             event(new BadgeUnlocked($badge->name, $user));
+
+            //300 naira cash back
+            $paymentProvider = new LocalPaymentProvider(); // this is a dummy class setup for local payment gateway
+
+            if ($paymentProvider->sendCashbackPaymentToUser($user, 300)) {
+                // Payment was successful
+            } else {
+                // Payment failed
+            }
         }
     }
+
 }
 
