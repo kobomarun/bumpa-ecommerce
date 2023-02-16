@@ -17,7 +17,7 @@ class UserController extends Controller
 
         event(new UserPurchase($user));
     }
-    
+
     public function achievements(User $user) {
         $unlockedAchievements = DB::table('achievements')
         ->join('user_achievements', 'achievements.id', '=', 'user_achievements.achievement_id')
@@ -29,11 +29,11 @@ class UserController extends Controller
 
         // Get next available achievements
         $nextAvailableAchievements = DB::table('achievements')
-            ->whereNotIn('id', function($query) use ($user) {
+            ->whereNotIn('id', fn($query) =>
                 $query->select('achievement_id')
                     ->from('user_achievements')
-                    ->where('user_id', '=', $user->id);
-            })
+                    ->where('user_id', '=', $user->id)
+            )
             ->select('name')
             ->distinct()
             ->get()
@@ -50,21 +50,21 @@ class UserController extends Controller
 
         // Get next badge and remaining achievements to unlock the next badge
         $nextBadge = DB::table('badges')
-            ->whereNotIn('id', function($query) use ($user) {
+            ->whereNotIn('id', fn($query) => 
                 $query->select('badge_id')
                     ->from('user_badges')
-                    ->where('user_id', '=', $user->id);
-            })
+                    ->where('user_id', '=', $user->id)
+            )
             ->select('name')
             ->first()
             ->name;
 
         $remainingToUnlockNextBadge = DB::table('achievements')
-            ->whereNotIn('id', function($query) use ($user) {
+            ->whereNotIn('id', fn($query) =>
                 $query->select('achievement_id')
                     ->from('user_achievements')
-                    ->where('user_id', '=', $user->id);
-            })
+                    ->where('user_id', '=', $user->id)
+            )
             ->count();
 
         // Return the results

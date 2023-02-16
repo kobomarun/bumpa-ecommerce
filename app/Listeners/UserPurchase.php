@@ -21,11 +21,11 @@ class UnlockAchievements
 
         // Check for unlocked achievements
         $unlockedAchievements = Achievement::where('target_count', '<=', $purchases)
-            ->whereNotIn('id', function ($query) use ($user) {
+            ->whereNotIn('id', fn($query) =>
                 $query->select('achievement_id')
                     ->from('user_achievements')
-                    ->where('user_id', $user->id);
-            })
+                    ->where('user_id', $user->id)
+            )
             ->get();
 
         foreach ($unlockedAchievements as $achievement) {
@@ -35,21 +35,22 @@ class UnlockAchievements
 
         // Check for unlocked badges
         $unlockedBadges = Badge::where('target_count', '<=', $user->achievements()->count())
-            ->whereNotIn('id', function ($query) use ($user) {
+            ->whereNotIn('id', fn($query) =>
                 $query->select('badge_id')
                     ->from('user_badges')
-                    ->where('user_id', $user->id);
-            })
+                    ->where('user_id', $user->id)
+            )
             ->get();
 
         foreach ($unlockedBadges as $badge) {
             $user->badges()->attach($badge->id);
             event(new BadgeUnlocked($badge->name, $user));
 
-            //300 naira cash back
-            $paymentProvider = new LocalPaymentProvider(); // this is a dummy class setup for local payment gateway
+            // 300 naira cash back
+            $paymentProvider = new LocalPaymentProvider();
+            $amount = 300;
 
-            if ($paymentProvider->sendCashbackPaymentToUser($user, 300)) {
+            if ($paymentProvider->sendCashbackPaymentToUser($user, $amount)) {
                 // Payment was successful
             } else {
                 // Payment failed
